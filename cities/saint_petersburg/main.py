@@ -96,5 +96,5 @@ blocks = blocks.join(blocks_buildings.drop(columns=['geometry']))
 for gdf in blocks_services.values():
     blocks = blocks.join(gdf.drop(columns=['geometry']))
 
-blocks.to_pickle('blocks.pickle')
-blocks.to_file('blocks.geojson')
+blocks.to_pickle(os.path.join(os.path.dirname(__file__), 'blocks.pickle'))
+blocks.to_file(os.path.join(os.path.dirname(__file__), 'blocks.geojson'))
