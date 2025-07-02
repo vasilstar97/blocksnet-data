@@ -1,4 +1,16 @@
-# Simple python boilerplate
+# BlocksNet data storage
+
+The repository is aimed to store and build data for different cities and locations for blocksnet.
+
+## Data
+
+Check out releases :)
+
+## Developing
+
+To do
+
+## Quickstart
 
 Just clone it for an easy start and then:
 
@@ -14,5 +26,3 @@ Just clone it for an easy start and then:
    ```
    $ pip install -r requirements.txt
 4. Choose your venv in jupyter notebook kernel.
-
-Don't forget to upgrade your ``requirements.txt`` file!

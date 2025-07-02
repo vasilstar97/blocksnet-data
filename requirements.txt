@@ -1,1 +1,1 @@
-blocksnet[ipynb]==1.0.0.dev0
+blocksnet==1.0.0.dev1
