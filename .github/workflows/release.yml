@@ -63,7 +63,10 @@ jobs:
               )
               exit_code=$?
               if [ $exit_code -eq 0 ]; then
-                zip -r "outputs/${city}.zip" "$output_dir"
+                (
+                  cd "$output_dir"
+                  zip -r "../../outputs/${city}.zip" ./*
+                )
                 echo "✅ $city completed"
               else
                 echo "❌ $city failed (exit code $exit_code), skipping"
