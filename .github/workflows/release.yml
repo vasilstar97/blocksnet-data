@@ -20,36 +20,40 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Get previous tag
+        id: prev_tag
         run: |
-          pip install -r requirements.txt
-
-      - name: Get release body
-        id: release_info
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const release = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag: context.payload.release.tag_name
-            });
-            core.setOutput("body", release.data.body);
-
-      - name: Parse city list from release body
-        id: city_list
+            tag=$(git tag --sort=-creatordate | grep -v "${{ github.ref_name }}" | head -n 1)
+            echo "Previous tag: $tag"
+            echo "tag=$tag" >> $GITHUB_OUTPUT
+  
+      - name: Get changed cities
+        id: changed
         run: |
-          echo "${{ steps.release_info.outputs.body }}" > release_body.txt
-          grep -E '^\s*-\s*' release_body.txt | sed 's/^- //' > city_list.txt || true
-          cat city_list.txt
-          echo "cities=$(paste -sd "," city_list.txt)" >> $GITHUB_OUTPUT
+          git fetch --tags
+
+          if [ -z "${{ steps.prev_tag.outputs.tag }}" ]; then
+            echo "No previous tag found, using all cities"
+            find cities -maxdepth 1 -mindepth 1 -type d -printf '%f\n' > changed.txt
+          else
+            git diff --name-only ${{ steps.prev_tag.outputs.tag }} HEAD > changed_files.txt
+            grep -oE '^cities/[^/]+/' changed_files.txt | cut -d'/' -f2 | sort -u > changed.txt
+          fi
+
+          echo "Detected cities to process:"
+          cat changed.txt || echo "(none)"
+          echo "cities=$(paste -sd "," changed.txt)" >> $GITHUB_OUTPUT
 
       - name: Create output directories
         run: mkdir -p outputs tmp
 
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
       - name: Run city scripts
         run: |
-          IFS=',' read -ra CITIES <<< "${{ steps.city_list.outputs.cities }}"
+          IFS=',' read -ra CITIES <<< "${{ steps.changed.outputs.cities }}"
           for city in "${CITIES[@]}"; do
             city_dir="cities/$city"
             output_dir="tmp/$city"
