@@ -1,4 +1,4 @@
-name: Run City Scripts on Release
+name: Release
 
 on:
   release:
@@ -42,22 +42,21 @@ jobs:
           echo "cities=$(paste -sd "," city_list.txt)" >> $GITHUB_OUTPUT
 
       - name: Create output directories
-        run: mkdir -p outputs tmp_output
+        run: mkdir -p outputs tmp
 
       - name: Run city scripts
         run: |
           IFS=',' read -ra CITIES <<< "${{ steps.city_list.outputs.cities }}"
           for city in "${CITIES[@]}"; do
             city_dir="cities/$city"
-            output_dir="tmp_output/$city"
+            output_dir="tmp/$city"
             mkdir -p "$output_dir"
 
             if [ -f "$city_dir/main.py" ]; then
               echo "⚙️ Running main.py for $city"
-              cp "$city_dir/main.py" "$output_dir/"
               (
                 cd "$output_dir"
-                python main.py
+                python "../../$city_dir/main.py"
               )
               exit_code=$?
               if [ $exit_code -eq 0 ]; then
@@ -70,6 +69,7 @@ jobs:
               echo "⚠️ No main.py found for $city — skipping"
             fi
           done
+
 
       - name: Freeze Python environment
         run: pip freeze > outputs/pip_freeze.txt
