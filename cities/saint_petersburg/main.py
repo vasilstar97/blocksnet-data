@@ -35,66 +35,89 @@ blocks = gpd.read_file(os.path.join(DATA_PATH, BLOCKS_FILE_NAME))
 crs = blocks.estimate_utm_crs()
 blocks = blocks.to_crs(crs)
 
-# assign functional zones
-print('Assigning functional zones')
-functional_zones = gpd.read_file(os.path.join(DATA_PATH, 'functional_zones.geojson')).to_crs(crs)
-with open(os.path.join(DATA_PATH, LU_RULES_FILE_NAME)) as o:
-    land_use_rules = json.loads(o.read())
-    land_use_rules = {zone : LandUse(lu.lower()) for zone,lu in land_use_rules.items()}
-blocks_lu = assign_land_use(blocks, functional_zones, land_use_rules)
+# making geometries valid
+print('Making geometries valid')
+blocks.geometry = blocks.make_valid()
+# explode geometrycollections
+blocks = blocks.explode()
+# explode multipolygons
+blocks = blocks.explode()
+blocks = blocks[blocks.geom_type == 'Polygon'].reset_index(drop=True)
 
-# aggregate buildings parameters
-print('Aggregating')
-buildings = gpd.read_file(os.path.join(DATA_PATH, BUILDINGS_FILE_NAME)).to_crs(crs)
-buildings = buildings[BUILDINGS_COLUMNS.keys()].rename(columns=BUILDINGS_COLUMNS)
-buildings = impute_buildings(buildings[BUILDINGS_COLUMNS.values()])
+# # assign functional zones
+# print('Assigning functional zones')
+# functional_zones = gpd.read_file(os.path.join(DATA_PATH, 'functional_zones.geojson')).to_crs(crs)
+# with open(os.path.join(DATA_PATH, LU_RULES_FILE_NAME)) as o:
+#     land_use_rules = json.loads(o.read())
+#     land_use_rules = {zone : LandUse(lu.lower()) for zone,lu in land_use_rules.items()}
+# blocks_lu = assign_land_use(blocks, functional_zones, land_use_rules)
 
-blocks_buildings,_ = aggregate_objects(blocks, buildings)
-blocks_buildings = blocks_buildings.drop(columns=BUILDINGS_DROP_COLUMNS).rename(columns={COUNT_COLUMN: COUNT_BUILDINGS_COLUMN})
+# # aggregate buildings parameters
+# print('Aggregating buildings parameters')
+# buildings = gpd.read_file(os.path.join(DATA_PATH, BUILDINGS_FILE_NAME)).to_crs(crs)
+# buildings = buildings[BUILDINGS_COLUMNS.keys()].rename(columns=BUILDINGS_COLUMNS)
+# buildings = impute_buildings(buildings[BUILDINGS_COLUMNS.values()])
 
-# aggregate services parameters
-print('Aggregating services parameters')
-services_path = os.path.join(DATA_PATH, SERVICES_FOLDER)
-for file_name in os.listdir(services_path):
-    service_type = file_name.split('.')[0]
-    if service_type not in service_types_config:
-        print(f'- {service_type} is presented, but not in the config')
+# blocks_buildings,_ = aggregate_objects(blocks, buildings)
+# blocks_buildings = blocks_buildings.drop(columns=BUILDINGS_DROP_COLUMNS).rename(columns={COUNT_COLUMN: COUNT_BUILDINGS_COLUMN})
 
-for service_type in service_types_config:
-    file_name = os.path.join(services_path, f'{service_type}.geojson')
-    if not os.path.exists(file_name):
-        print(f'- {service_type} is in the config, but not presented')
+# # aggregate services parameters
+# print('Aggregating services parameters')
+# services_path = os.path.join(DATA_PATH, SERVICES_FOLDER)
+# for file_name in os.listdir(services_path):
+#     service_type = file_name.split('.')[0]
+#     if service_type not in service_types_config:
+#         print(f'- {service_type} is presented, but not in the config')
 
-services_gdfs = {}
+# for service_type in service_types_config:
+#     file_name = os.path.join(services_path, f'{service_type}.geojson')
+#     if not os.path.exists(file_name):
+#         print(f'- {service_type} is in the config, but not presented')
 
-for service_type in service_types_config:
-    file_name = os.path.join(services_path, f'{service_type}.geojson')
-    if os.path.exists(file_name):
-        gdf = gpd.read_file(file_name).to_crs(crs)
-        gdf = gdf[~gdf.geometry.isna()].copy()
-        services_gdfs[service_type] = gdf
+# services_gdfs = {}
 
-print(f'{len(services_gdfs)} / {len(service_types_config.service_types)} service types will be in the result')
+# for service_type in service_types_config:
+#     file_name = os.path.join(services_path, f'{service_type}.geojson')
+#     if os.path.exists(file_name):
+#         gdf = gpd.read_file(file_name).to_crs(crs)
+#         gdf = gdf[~gdf.geometry.isna()].copy()
+#         services_gdfs[service_type] = gdf
 
-services_gdfs = {st:impute_services(gdf,st) for st,gdf in services_gdfs.items()}
+# print(f'{len(services_gdfs)} / {len(service_types_config.service_types)} service types will be in the result')
 
-blocks_services = {}
+# services_gdfs = {st:impute_services(gdf,st) for st,gdf in services_gdfs.items()}
 
-for service_type,services_gdf in services_gdfs.items():
-    gdf,_ = aggregate_objects(blocks, services_gdf)
-    gdf = gdf.rename(columns={
-        'capacity':f'capacity_{service_type}',
-        'count':f'count_{service_type}',
-    })
-    blocks_services[service_type] = gdf
+# blocks_services = {}
 
-# finale
-print('Finalizing the blocks')
-blocks['site_area'] = blocks.area
-blocks = blocks.join(blocks_lu.drop(columns=['geometry']))
-blocks = blocks.join(blocks_buildings.drop(columns=['geometry']))
-for gdf in blocks_services.values():
-    blocks = blocks.join(gdf.drop(columns=['geometry']))
+# for service_type,services_gdf in services_gdfs.items():
+#     gdf,_ = aggregate_objects(blocks, services_gdf)
+#     gdf = gdf.rename(columns={
+#         'capacity':f'capacity_{service_type}',
+#         'count':f'count_{service_type}',
+#     })
+#     blocks_services[service_type] = gdf
 
-blocks.to_pickle('blocks.pickle')
-blocks.to_file('blocks.geojson')
+# # finale
+# print('Finalizing the blocks')
+# blocks['site_area'] = blocks.area
+# blocks = blocks.join(blocks_lu.drop(columns=['geometry']))
+# blocks = blocks.join(blocks_buildings.drop(columns=['geometry']))
+# for gdf in blocks_services.values():
+#     blocks = blocks.join(gdf.drop(columns=['geometry']))
+
+# blocks.to_pickle('blocks.pickle')
+# blocks.to_file('blocks.geojson')
+
+from blocksnet.relations.accessibility import get_accessibility_graph, calculate_accessibility_matrix
+import pickle
+
+territory_geom = blocks.union_all().convex_hull
+territory_gdf = gpd.GeoDataFrame(geometry=[territory_geom], crs=blocks.crs)
+
+for graph_type in ['drive', 'intermodal']:
+    print(f'Making {graph_type} graph and matrix')
+    graph = get_accessibility_graph(territory_gdf, graph_type)
+    with open(f'graph_{graph_type}.pickle', 'wb') as file:
+        pickle.dump(graph, file)
+    acc_mx = calculate_accessibility_matrix(blocks, graph)
+    acc_mx.to_pickle(f'accessibility_matrix_{graph_type}.pickle')
