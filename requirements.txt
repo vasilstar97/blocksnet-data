@@ -1,1 +1,1 @@
-blocksnet==1.0.0.dev1
+blocksnet==1.0.0.a5

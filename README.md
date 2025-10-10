@@ -1,28 +1,33 @@
-# BlocksNet data storage
+# BlocksNet Data
 
-The repository is aimed to store and build data for different cities and locations for blocksnet.
+BlocksNet Data is a collection of urban datasets processed for analysis and modeling with [BlocksNet](https://github.com/aimclub/blocksnet)
 
-## Data
+## Features
 
-Check out releases :)
+- Automated data processing per city using Python scripts (`main.py` in each city folder).
+- Generates ZIP archives for each city containing processed datasets.
+- Supports draft GitHub releases with versioned datasets.
+- Release notes are automatically generated, listing:
+  - BlocksNet version
+  - Cities included
+  - Files per city
 
-## Developing
+## Usage
 
-To do
+1. **Add or update city data** under `cities/<city_name>/`.
+2. Each city folder should contain a `main.py` to process its data.
+3. Push changes and create a **draft GitHub release**; the workflow will:
+   - Run scripts for changes cities
+   - Package outputs into ZIPs
+   - Generate release notes
+   - Publish the release if successful
 
-## Quickstart
+## Versioning
 
-Just clone it for an easy start and then:
+- Dataset releases are tagged using **date-based versions**: `vYYYY.MM.DD`
+- Pre-release drafts can use suffixes: `vYYYY.MM.DD-alpha`
 
-1. Make virtual environment:
+## Requirements
 
-   ```
-   $ python3 -m venv .venv
-2. Activate it:
-   ```
-   $ source .venv/bin/activate
-3. Install your dependencies:
-
-   ```
-   $ pip install -r requirements.txt
-4. Choose your venv in jupyter notebook kernel.
+- Python 3.10
+- Dependencies listed in `requirements.txt`

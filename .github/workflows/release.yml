@@ -12,21 +12,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check release is draft
+        if: github.event.release.draft == false
+        run: |
+          echo "❌ This workflow only runs for draft releases."
+          exit 1
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+
+      - name: Fetch all tags
+        run: git fetch --tags
 
       - name: Get previous tag
         id: prev_tag
         run: |
-            tag=$(git tag --sort=-creatordate | grep -v "${{ github.ref_name }}" | head -n 1)
-            echo "Previous tag: $tag"
-            echo "tag=$tag" >> $GITHUB_OUTPUT
-  
+          tag=$(git tag --sort=-creatordate | grep -v "${{ github.ref_name }}" | head -n 1)
+          echo "Previous tag: $tag"
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+
       - name: Get changed cities
         id: changed
         run: |
@@ -69,7 +78,7 @@ jobs:
               if [ $exit_code -eq 0 ]; then
                 (
                   cd "$output_dir"
-                  zip -r "../../outputs/${city}.zip" ./*
+                  zip -r "../../outputs/${city}.zip" ./* -x "cache/*" "*.tmp"
                 )
                 echo "✅ $city completed"
               else
@@ -80,13 +89,50 @@ jobs:
             fi
           done
 
-
       - name: Freeze Python environment
         run: pip freeze > outputs/pip_freeze.txt
 
-      - name: Upload artifacts to release
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          echo "## Release: \`${{ github.event.release.tag_name }}\`" > release_notes.md
+          echo "" >> release_notes.md
+
+          echo "### Blocksnet Version" >> release_notes.md
+          blocksnet_ver=$(python -c "import blocksnet; print(blocksnet.__version__)")
+          echo '```bash' >> release_notes.md
+          echo "pip install blocksnet==${blocksnet_ver}" >> release_notes.md
+          echo '```' >> release_notes.md
+          echo "" >> release_notes.md
+
+          echo "### Cities" >> release_notes.md
+          for city_zip in outputs/*.zip; do
+            city=$(basename "$city_zip" .zip)
+            echo "- $city:" >> release_notes.md
+            unzip -l "$city_zip" | tail -n +4 | head -n -2 | awk '{print "  - `" $4 "`"}' >> release_notes.md
+          done
+
+          echo "release_notes_file=release_notes.md" >> $GITHUB_OUTPUT
+
+      - name: Upload artifacts to draft release
         uses: softprops/action-gh-release@v1
         with:
           files: outputs/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release
+        if: success()
+        run: |
+          echo "✅ Build succeeded — publishing release..."
+          gh release edit ${{ github.event.release.tag_name }} --draft=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete broken draft release
+        if: failure()
+        run: |
+          echo "❌ Build failed — deleting draft release..."
+          gh release delete ${{ github.event.release.tag_name }} --cleanup-tag || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
