@@ -12,12 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check release is draft
-        if: github.event.release.draft == false
-        run: |
-          echo "❌ This workflow only runs for draft releases."
-          exit 1
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -121,18 +115,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish release
-        if: success()
-        run: |
-          echo "✅ Build succeeded — publishing release..."
-          gh release edit ${{ github.event.release.tag_name }} --draft=false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Publish release
+      #   if: success()
+      #   run: |
+      #     echo "✅ Build succeeded — publishing release..."
+      #     gh release edit ${{ github.event.release.tag_name }} --draft=false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete broken draft release
-        if: failure()
-        run: |
-          echo "❌ Build failed — deleting draft release..."
-          gh release delete ${{ github.event.release.tag_name }} --cleanup-tag || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Delete broken draft release
+      #   if: failure()
+      #   run: |
+      #     echo "❌ Build failed — deleting draft release..."
+      #     gh release delete ${{ github.event.release.tag_name }} --cleanup-tag || true
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
