@@ -112,6 +112,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: outputs/*
+          notes: ${{ steps.release_notes.outputs.release_notes_file }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
