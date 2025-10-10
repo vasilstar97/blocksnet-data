@@ -1,0 +1,14 @@
+{
+"type": "FeatureCollection",
+"name": "chemical",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 86.118918600962232, 55.329419965339802 ] } },
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 85.992642845608515, 55.342473310452625 ] } },
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 85.999417748154755, 55.348021523060275 ] } },
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 86.006144026998527, 55.35877473162779 ] } },
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 85.997456592154521, 55.391196347591929 ] } },
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 86.056129193153211, 55.400318049670858 ] } },
+{ "type": "Feature", "properties": { }, "geometry": { "type": "Point", "coordinates": [ 86.142371433460895, 55.442236065511516 ] } }
+]
+}

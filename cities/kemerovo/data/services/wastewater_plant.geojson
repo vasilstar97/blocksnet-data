@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "wastewater_plant",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": "0" }, "geometry": { "type": "Point", "coordinates": [ 86.088079893757637, 55.513956294604618 ] } },
+{ "type": "Feature", "properties": { "id": "1" }, "geometry": { "type": "Point", "coordinates": [ 85.970754180463032, 55.36777437705247 ] } },
+{ "type": "Feature", "properties": { "id": "2" }, "geometry": { "type": "Point", "coordinates": [ 85.966555495848851, 55.417704431385097 ] } },
+{ "type": "Feature", "properties": { "id": "3" }, "geometry": { "type": "Point", "coordinates": [ 85.949581841805909, 55.332130317356132 ] } }
+]
+}
