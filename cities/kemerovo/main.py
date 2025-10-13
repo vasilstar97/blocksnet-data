@@ -38,6 +38,8 @@ result_gdf = blocks_gdf.copy()
 for df in [land_use_df, buildings_df, *services_dfs]:
     result_gdf = result_gdf.join(df)
 
+print(buildings_df.columns)
+
 result_gdf.to_pickle('blocks.pickle')
 result_gdf.to_file('blocks.geojson')
 

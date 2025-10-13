@@ -16,7 +16,7 @@ def get_buildings_df(blocks_gdf : gpd.GeoDataFrame, buildings_path : str, distri
     buildings_gdf = impute_buildings(buildings_gdf)
 
     print('Imputing buildings population')
-    buildings_gdf['population'] = None
+    buildings_gdf['population'] = 0
     buildings_gdf.geometry = buildings_gdf.representative_point()
 
     for district_id in districts_gdf.index:
